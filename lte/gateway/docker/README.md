@@ -1,8 +1,10 @@
-# Containerized AGW
+## About Magma AGW
+The Access Gateway (AGW) provides network services and policy enforcement. In an LTE network, the AGW implements an evolved packet core (EPC), and a combination of an AAA and a PGW. It works with existing, unmodified commercial radio hardware.
 
+## Containerized AGW
 This folder contains container image definitions for AGW services.
 
-The containers need to run on a host that has a patched Open vSwitch installation.
+The containers need to run on a host that has a patched Open vSwitch installation.  
 The script [agw_install_docker.sh](../deploy/agw_install_docker.sh) can configure an Ubuntu machine to act as a
 host system for the containerized AGW.
 
@@ -11,10 +13,16 @@ a host for the containerized AGW. Currently the preparation is not complete and
 still requires to run `agw_install_docker.sh` at the end, see [Deploying the
 containerized AGW on AWS](#deploying-the-containerized-agw-on-aws).
 
-## Building the images
+## Building AGW Docker images
 
-The images can be built with `cd $MAGMA_ROOT/lte/gateway/docker && docker-compose build`.
-On Arm architecture with 5.4 kernel:The images can be built with `cd $MAGMA_ROOT/lte/gateway/docker && docker-compose build --build-arg CPU_ARCH=aarch64 --build-arg DEB_PORT=arm64`.
+The images can be built with
+```bash
+cd $MAGMA_ROOT/lte/gateway/docker && docker-compose build
+```
+For Arm architecture with 5.4 kernel, The images can be built with 
+```bash
+cd $MAGMA_ROOT/lte/gateway/docker && docker-compose build --build-arg CPU_ARCH=aarch64 --build-arg DEB_PORT=arm64
+```
 
 ## Deploying the containerized AGW on AWS
 
@@ -41,7 +49,6 @@ containerized AGW by running the following steps inside the VM:
 cd $MAGMA_ROOT/lte/gateway && make run  # You can skip this if you have built the AGW with make before
 for component in redis nghttpx td-agent-bit; do cp "${MAGMA_ROOT}"/{orc8r,lte}/gateway/configs/templates/${component}.conf.template; done
 sudo systemctl stop 'magma@*' 'sctpd' # We don't want the systemd-based AGW to run when we start the containerized AGW
-sudo systemctl start magma_dp@envoy
 cd $MAGMA_ROOT/lte/gateway/docker
 docker-compose build
 docker-compose up
@@ -52,6 +59,26 @@ on a VM. However we are not there yet as the containerized AGW currently depends
 on a patched Open vSwitch installation on the host machine. The magma VM happens
 to have the right packages installed, and thus can currently be used as a quick
 and dirty way to run the containers locally.
+
+## Running Containerized AGW on Local VM.
+### Prerequisites  
+- A VM with minimum `8 CPU's`,`16 GB's RAM`,`100 GB's Storage` and `2 NIC's`
+- `rootCA.pem` file in `magma/.cache/test_certs/rootCA.pem` directory to get authenticated while connecting with orc8r.
+
+
+### Setup
+1) Set HostName to `magma`
+2) Clone Magma repo.
+```bash
+git clone https://github.com/magma/magma.git && cd magma
+```
+3) Set env variables.(Provide accordingly)
+```bash
+sudo su
+export HOME=/home/ubuntu/
+export MAGMA_ROOT=/home/ubuntu/magma/
+```
+4) 
 
 ### Running the S1AP integration tests against the containerized AGW
 
